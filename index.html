@@ -1,0 +1,211 @@
+<!-- Tailwind CSS da CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+    /* Stili speciali per la stampa / salvataggio in PDF */
+    @media print {
+        header, footer, .no-print, #installBanner {
+            display: none !important;
+        }
+        body {
+            background: white !important;
+            color: black !important;
+        }
+        .print-card {
+            box-shadow: none !important;
+            border: 1px solid #ccc !important;
+        }
+    }
+</style>
+
+<!-- Header -->
+<header class="bg-indigo-600 text-white p-4 text-center shadow-md no-print">
+    <h1 class="text-2xl font-bold tracking-wide">⚡ ApriXML</h1>
+    <p class="text-xs text-indigo-100 mt-1">Visualizzatore Fatture Elettroniche in-browser</p>
+</header>
+
+<!-- Main Container -->
+<main class="flex-grow container mx-auto px-4 py-6 max-w-lg">
+    
+    <!-- Banner Privacy -->
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg p-3 mb-4 text-center font-medium shadow-sm no-print">
+        🔒 <strong>100% Privacy Garantita:</strong> Il file viene aperto direttamente nel tuo telefono. Nessun dato lascia mai il dispositivo.
+    </div>
+
+    <!-- Banner PWA (Aggiungi a Schermata Home) -->
+    <div id="pwaBanner" class="hidden bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs rounded-lg p-3 mb-4 flex items-center justify-between no-print">
+        <span>📲 Usa ApriXML come un'App sul telefono!</span>
+        <button onclick="aggiungiAllaHome()" class="bg-indigo-600 text-white px-3 py-1 rounded-md font-bold">Installa</button>
+    </div>
+
+    <!-- Box Caricamento File -->
+    <div class="border-2 border-dashed border-indigo-300 rounded-2xl p-8 text-center bg-white shadow-sm hover:border-indigo-500 transition no-print">
+        <input type="file" id="xmlInput" accept=".xml" class="hidden" onchange="gestisciFile(this.files)">
+        <label for="xmlInput" class="cursor-pointer block">
+            <div class="text-4xl mb-2">📂</div>
+            <span class="block text-sm font-semibold text-indigo-600 mb-1">Seleziona la Fattura .XML</span>
+            <span class="block text-xs text-slate-400">Tocca qui per scegliere il file dal telefono</span>
+        </label>
+    </div>
+
+    <!-- Risultato Fattura -->
+    <div id="risultato" class="hidden mt-6 space-y-4">
+        
+        <!-- Scheda Dati Generali -->
+        <div class="bg-white rounded-xl p-5 shadow-md border border-slate-100 print-card">
+            <div class="flex justify-between items-start border-b border-slate-100 pb-3 mb-3">
+                <div>
+                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Fattura N.</span>
+                    <h2 id="numeroFattura" class="text-lg font-bold text-slate-800">-</h2>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Data</span>
+                    <p id="dataFattura" class="text-sm font-semibold text-slate-700">-</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 text-sm">
+                <div>
+                    <p class="text-xs text-slate-400">Fornitore / Emittente:</p>
+                    <p id="fornitore" class="font-bold text-slate-800">-</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400">Cliente / Destinatario:</p>
+                    <p id="cliente" class="font-bold text-slate-800">-</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Totale Importo -->
+        <div class="bg-indigo-50 rounded-xl p-4 text-center border border-indigo-100 print-card">
+            <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider block">Importo Totale da Pagare</span>
+            <span id="importoTotale" class="text-3xl font-extrabold text-indigo-900 mt-1 block">€ 0,00</span>
+        </div>
+
+        <!-- Tabella Prodotti / Servizi -->
+        <div class="bg-white rounded-xl p-4 shadow-md border border-slate-100 print-card">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Dettaglio Voci</h3>
+            <div id="listaRighe" class="space-y-2 divide-y divide-slate-100">
+                <!-- Inserito via JS -->
+            </div>
+        </div>
+
+        <!-- Tasto Stampa / Salva PDF -->
+        <button onclick="window.print()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl shadow-md text-sm hover:bg-slate-900 transition no-print flex items-center justify-center gap-2">
+            🖨️ Stampa o Salva in PDF
+        </button>
+
+    </div>
+
+    ---
+
+    <!-- Sezione SEO FAQ (Testo per Google) -->
+    <section class="mt-12 space-y-6 text-slate-600 text-xs leading-relaxed no-print border-t border-slate-200 pt-8">
+        <h2 class="text-base font-bold text-slate-800">Domande Frequenti sugli Allegati XML</h2>
+        
+        <div>
+            <h3 class="font-bold text-slate-700 text-sm mb-1">Come posso aprire un file XML da iPhone o Android?</h3>
+            <p>Ti basta premere sul box in alto, selezionare il file .xml salvato tra i tuoi documenti o scaricato da una mail PEC, e il nostro sistema lo trasformerà in una fattura chiara e leggibile in meno di un secondo.</p>
+        </div>
+
+        <div>
+            <h3 class="font-bold text-slate-700 text-sm mb-1">I miei dati fiscali sono al sicuro?</h3>
+            <p>Assolutamente sì. A differenza di altri siti, ApriXML elabora il file interamente all'interno della memoria del tuo smartphone o computer tramite codice JavaScript. Nessun file viene inviato o memorizzato su server esterni.</p>
+        </div>
+
+        <div>
+            <h3 class="font-bold text-slate-700 text-sm mb-1">Come posso salvare la fattura in formato PDF?</h3>
+            <p>Dopo aver caricato il file XML, premi sul pulsante "Stampa o Salva in PDF". Dal menu di stampa del tuo telefono potrai selezionare la voce "Salva come PDF" per conservare la fattura nel tuo dispositivo.</p>
+        </div>
+    </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="text-center p-4 text-xs text-slate-400 no-print">
+    &copy; ApriXML • Strumento gratuito e sicuro per Fatture Elettroniche
+</footer>
+
+<!-- Logica JavaScript -->
+<script>
+    // Gestione Lettura XML
+    function gestisciFile(files) {
+        if (files.length === 0) return;
+        const file = files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const xmlText = e.target.result;
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+            try {
+                const getTag = (tag) => {
+                    const el = xmlDoc.getElementsByTagName(tag)[0];
+                    return el ? el.textContent : '';
+                };
+
+                const numero = getTag('Numero');
+                const data = getTag('Data');
+                
+                const cedente = xmlDoc.getElementsByTagName('CedentePrestatore')[0];
+                const fornitoreNome = cedente ? (cedente.getElementsByTagName('Denominazione')[0]?.textContent || 
+                    ((cedente.getElementsByTagName('Nome')[0]?.textContent || '') + ' ' + (cedente.getElementsByTagName('Cognome')[0]?.textContent || ''))) : 'N/D';
+
+                const cessionario = xmlDoc.getElementsByTagName('CessionarioCommittente')[0];
+                const clienteNome = cessionario ? (cessionario.getElementsByTagName('Denominazione')[0]?.textContent || 
+                    ((cessionario.getElementsByTagName('Nome')[0]?.textContent || '') + ' ' + (cessionario.getElementsByTagName('Cognome')[0]?.textContent || ''))) : 'N/D';
+
+                const importo = getTag('ImportoTotaleDocumento') || getTag('PrezzoTotale') || '0.00';
+
+                document.getElementById('numeroFattura').innerText = numero || 'N/D';
+                document.getElementById('dataFattura').innerText = data || 'N/D';
+                document.getElementById('fornitore').innerText = fornitoreNome;
+                document.getElementById('cliente').innerText = clienteNome;
+                document.getElementById('importoTotale').innerText = '€ ' + parseFloat(importo).toFixed(2);
+
+                const righe = xmlDoc.getElementsByTagName('DettaglioLinee');
+                const containerRighe = document.getElementById('listaRighe');
+                containerRighe.innerHTML = '';
+
+                for (let i = 0; i < righe.length; i++) {
+                    const desc = righe[i].getElementsByTagName('Descrizione')[0]?.textContent || 'Voce generica';
+                    const prezzo = righe[i].getElementsByTagName('PrezzoTotale')[0]?.textContent || '0.00';
+
+                    const item = document.createElement('div');
+                    item.className = 'pt-2 flex justify-between text-xs';
+                    item.innerHTML = `
+                        <span class="text-slate-700 font-medium">${desc}</span>
+                        <span class="font-bold text-slate-900">€ ${parseFloat(prezzo).toFixed(2)}</span>
+                    `;
+                    containerRighe.appendChild(item);
+                }
+
+                document.getElementById('risultato').classList.remove('hidden');
+
+            } catch (err) {
+                alert('Errore nella lettura del file XML. Assicurati che sia un file di fattura elettronica valido.');
+            }
+        };
+
+        reader.readAsText(file);
+    }
+
+    // Logica per Promostra PWA su mobile
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('pwaBanner').classList.remove('hidden');
+    });
+
+    function aggiungiAllaHome() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                deferredPrompt = null;
+                document.getElementById('pwaBanner').classList.add('hidden');
+            });
+        }
+    }
+</script>
