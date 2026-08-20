@@ -288,29 +288,30 @@
 
     // Estrazione pulita da file P7M o XML grezzo
     function extractXmlFromText(text) {
-      if (text.includes('<FatturaElettronica') || text.includes('<p:FatturaElettronica')) {
+      if (text.includes('FatturaElettronica')) {
         let start = text.indexOf('<?xml');
-        if (start === -1) start = text.indexOf('<p:FatturaElettronica');
-        if (start === -1) start = text.indexOf('<FatturaElettronica');
-
-        let end = text.indexOf('</p:FatturaElettronica>');
-        if (end !== -1) end += '</p:FatturaElettronica>'.length;
-        else {
-          end = text.indexOf('</FatturaElettronica>');
-          if (end !== -1) end += '</FatturaElettronica>'.length;
-        }
-
+        if (start === -1) start = text.indexOf('<');
+        let end = text.lastIndexOf('>');
         if (start !== -1 && end !== -1 && end > start) {
-          return text.substring(start, end);
+          return text.substring(start, end + 1);
         }
       }
       return text;
     }
 
-    // Helper per estrarre testo dai tag
+    // Helper universale per gestire i prefissi XML (p:, ns2:, ecc.)
+    function getXmlNodes(parent, tagName) {
+      if (!parent) return [];
+      let nodes = parent.getElementsByTagNameNS("*", tagName);
+      if (!nodes || nodes.length === 0) {
+        nodes = parent.getElementsByTagName(tagName);
+      }
+      return nodes;
+    }
+
     function getXmlTagText(parent, tagName) {
       if (!parent) return '';
-      const els = parent.getElementsByTagName(tagName);
+      const els = getXmlNodes(parent, tagName);
       return els.length > 0 ? els[0].textContent.trim() : '';
     }
 
@@ -330,16 +331,16 @@
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlString, "text/xml");
 
-      // 1. Controlla se il file XML è corrotto o malformato
       if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
         alert("Errore: Il file caricato non è un XML valido o è danneggiato.");
         return;
       }
 
-      // 2. CONTROLLO DI VALIDITÀ: Verifica se è davvero una Fattura Elettronica
-      const isFattura = xmlDoc.getElementsByTagName("FatturaElettronica").length > 0 || 
-                        xmlDoc.getElementsByTagName("p:FatturaElettronica").length > 0 ||
-                        xmlDoc.getElementsByTagName("FatturaElettronicaHeader").length > 0;
+      // Controllo Fattura (tollerante a tutti i prefissi di namespace)
+      const isFattura = xmlString.includes("FatturaElettronica") || 
+                        xmlString.includes("FatturaElettronicaHeader") ||
+                        xmlString.includes("CedentePrestatore") ||
+                        getXmlNodes(xmlDoc, "FatturaElettronicaHeader").length > 0;
 
       if (!isFattura) {
         alert("Attenzione: Il file caricato è un file XML, ma NON è una Fattura Elettronica (FatturaPA).");
@@ -347,35 +348,35 @@
       }
 
       // Cedente / Fornitore
-      const cedente = xmlDoc.getElementsByTagName("CedentePrestatore")[0];
+      const cedente = getXmlNodes(xmlDoc, "CedentePrestatore")[0];
       if (cedente) {
         const den = getXmlTagText(cedente, "Denominazione") || (getXmlTagText(cedente, "Nome") + ' ' + getXmlTagText(cedente, "Cognome"));
         document.getElementById('cedente-nome').innerText = den || '-';
         document.getElementById('cedente-piva').innerText = 'P.IVA: ' + (getXmlTagText(cedente, "IdCodice") || '-');
         document.getElementById('cedente-cf').innerText = 'C.F.: ' + (getXmlTagText(cedente, "CodiceFiscale") || '-');
         
-        const sede = cedente.getElementsByTagName("Sede")[0];
+        const sede = getXmlNodes(cedente, "Sede")[0];
         if (sede) {
           document.getElementById('cedente-indirizzo').innerText = `${getXmlTagText(sede, "Indirizzo")}, ${getXmlTagText(sede, "CAP")} ${getXmlTagText(sede, "Comune")} (${getXmlTagText(sede, "Provincia")})`;
         }
       }
 
       // Cessionario / Cliente
-      const cessionario = xmlDoc.getElementsByTagName("CessionarioCommittente")[0];
+      const cessionario = getXmlNodes(xmlDoc, "CessionarioCommittente")[0];
       if (cessionario) {
         const den = getXmlTagText(cessionario, "Denominazione") || (getXmlTagText(cessionario, "Nome") + ' ' + getXmlTagText(cessionario, "Cognome"));
         document.getElementById('cessionario-nome').innerText = den || '-';
         document.getElementById('cessionario-piva').innerText = 'P.IVA: ' + (getXmlTagText(cessionario, "IdCodice") || '-');
         document.getElementById('cessionario-cf').innerText = 'C.F.: ' + (getXmlTagText(cessionario, "CodiceFiscale") || '-');
         
-        const sede = cessionario.getElementsByTagName("Sede")[0];
+        const sede = getXmlNodes(cessionario, "Sede")[0];
         if (sede) {
           document.getElementById('cessionario-indirizzo').innerText = `${getXmlTagText(sede, "Indirizzo")}, ${getXmlTagText(sede, "CAP")} ${getXmlTagText(sede, "Comune")} (${getXmlTagText(sede, "Provincia")})`;
         }
       }
 
       // Dati Generali Documento
-      const datiGenerali = xmlDoc.getElementsByTagName("DatiGeneraliDocumento")[0];
+      const datiGenerali = getXmlNodes(xmlDoc, "DatiGeneraliDocumento")[0];
       if (datiGenerali) {
         document.getElementById('doc-tipo').innerText = getXmlTagText(datiGenerali, "TipoDocumento") || 'Fattura';
         document.getElementById('doc-numero').innerText = getXmlTagText(datiGenerali, "Numero") || '-';
@@ -395,7 +396,7 @@
       // Tabella Linee
       const lineeBody = document.getElementById('linee-body');
       lineeBody.innerHTML = '';
-      const linee = xmlDoc.getElementsByTagName("DettaglioLinee");
+      const linee = getXmlNodes(xmlDoc, "DettaglioLinee");
       let totImponibile = 0;
       let totIva = 0;
 
@@ -426,7 +427,7 @@
       document.getElementById('tot-iva').innerText = formatEuro(totIva.toString());
 
       // Dati Pagamento
-      const pag = xmlDoc.getElementsByTagName("DettaglioPagamento")[0];
+      const pag = getXmlNodes(xmlDoc, "DettaglioPagamento")[0];
       if (pag) {
         document.getElementById('pag-modalita').innerText = getXmlTagText(pag, "ModalitaPagamento") || 'Non specificata';
         document.getElementById('pag-scadenza').innerText = formatDate(getXmlTagText(pag, "DataScadenzaPagamento"));
