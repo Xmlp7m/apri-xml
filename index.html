@@ -1,211 +1,439 @@
-<!-- Tailwind CSS da CDN -->
-<script src="https://cdn.tailwindcss.com"></script>
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualizzatore Fattura Elettronica Gratis | Apri XML e P7M Online</title>
+  <meta name="description" content="Visualizza, leggi e stampa le tue fatture elettroniche XML e XML.P7M online gratis. Servizio sicuro al 100% nel tuo browser, nessun dato inviato a server esterni.">
+  <meta name="keywords" content="visualizzatore fattura elettronica, apri xml, apri p7m online, leggi fattura xml gratis, converti xml in pdf, fattura pa, lettura p7m">
+  <meta name="robots" content="index, follow">
 
-<style>
-    /* Stili speciali per la stampa / salvataggio in PDF */
-    @media print {
-        header, footer, .no-print, #installBanner {
-            display: none !important;
-        }
-        body {
-            background: white !important;
-            color: black !important;
-        }
-        .print-card {
-            box-shadow: none !important;
-            border: 1px solid #ccc !important;
-        }
+  <!-- Dati Strutturati Schema.org per Google -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Visualizzatore Fattura Elettronica Gratis",
+    "url": "https://xmlp7m.github.io/apri-xml/",
+    "description": "Strumento gratuito online per leggere, visualizzare e stampare fatture elettroniche XML e P7M in totale privacy.",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "All",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "EUR"
     }
-</style>
+  }
+  </script>
 
-<!-- Header -->
-<header class="bg-indigo-600 text-white p-4 text-center shadow-md no-print">
-    <h1 class="text-2xl font-bold tracking-wide">⚡ ApriXML</h1>
-    <p class="text-xs text-indigo-100 mt-1">Visualizzatore Fatture Elettroniche in-browser</p>
-</header>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+    }
 
-<!-- Main Container -->
-<main class="flex-grow container mx-auto px-4 py-6 max-w-lg">
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.5; padding-bottom: 60px; }
     
-    <!-- Banner Privacy -->
-    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg p-3 mb-4 text-center font-medium shadow-sm no-print">
-        🔒 <strong>100% Privacy Garantita:</strong> Il file viene aperto direttamente nel tuo telefono. Nessun dato lascia mai il dispositivo.
+    header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 1rem 2rem; text-align: center; }
+    header h1 { font-size: 1.5rem; color: var(--primary); font-weight: 700; }
+    header p { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; }
+
+    .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+
+    /* Privacy Banner */
+    .privacy-badge { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.875rem; text-align: center; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+    /* Dropzone */
+    .dropzone { background: var(--surface); border: 2px dashed #93c5fd; border-radius: 12px; padding: 3rem 2rem; text-align: center; cursor: pointer; transition: all 0.2s ease; margin-bottom: 2rem; }
+    .dropzone:hover, .dropzone.dragover { border-color: var(--primary); background: #eff6ff; }
+    .dropzone-icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+    .dropzone h2 { font-size: 1.2rem; color: var(--text); margin-bottom: 0.5rem; }
+    .dropzone p { color: var(--text-muted); font-size: 0.9rem; }
+
+    /* Action Buttons */
+    .action-bar { display: none; gap: 1rem; margin-bottom: 1.5rem; justify-content: flex-end; }
+    .btn { background: var(--primary); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: background 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+    .btn-secondary:hover { background: #cbd5e1; }
+
+    /* Invoice Viewer Container */
+    #invoice-result { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    
+    .invoice-header-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; }
+    .party-card { background: #f1f5f9; padding: 1.2rem; border-radius: 8px; font-size: 0.9rem; }
+    .party-card h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .party-name { font-size: 1.1rem; font-weight: bold; color: var(--text); margin-bottom: 0.4rem; }
+
+    .doc-info { display: flex; flex-wrap: wrap; gap: 1.5rem; background: #eff6ff; padding: 1rem 1.2rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.95rem; }
+    .doc-info div { flex: 1; min-width: 140px; }
+    .doc-info span { display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+    .doc-info strong { font-size: 1.05rem; color: var(--primary); }
+
+    /* Tables */
+    .table-container { overflow-x: auto; margin-bottom: 1.5rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th { background: #f8fafc; text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border); font-weight: 600; color: var(--text-muted); }
+    td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+
+    /* Summary Box */
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+    .totals-box { background: #f8fafc; border: 1px solid var(--border); padding: 1.2rem; border-radius: 8px; }
+    .totals-row { display: flex; justify-content: space-between; padding: 0.4rem 0; font-size: 0.9rem; }
+    .totals-row.final { font-size: 1.2rem; font-weight: bold; border-top: 2px solid var(--border); padding-top: 0.8rem; margin-top: 0.4rem; color: var(--primary); }
+
+    /* SEO Section */
+    .seo-content { margin-top: 4rem; border-top: 1px solid var(--border); padding-top: 2.5rem; color: #334155; }
+    .seo-content h2 { font-size: 1.4rem; margin: 1.5rem 0 0.8rem 0; color: var(--text); }
+    .seo-content p { font-size: 0.95rem; margin-bottom: 1rem; line-height: 1.6; }
+    .faq-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.2rem; margin-bottom: 1rem; }
+    .faq-item h3 { font-size: 1rem; color: var(--primary); margin-bottom: 0.4rem; }
+
+    /* AdSense Placeholder */
+    .ad-placeholder { background: #f1f5f9; border: 1px dashed #cbd5e1; padding: 1rem; text-align: center; font-size: 0.8rem; color: var(--text-muted); margin: 2rem 0; min-height: 90px; border-radius: 8px; }
+
+    /* Print CSS */
+    @media print {
+      body { background: white; color: black; font-size: 11pt; padding: 0; }
+      header, .privacy-badge, .dropzone, .action-bar, .seo-content, .ad-placeholder { display: none !important; }
+      .container { max-width: 100%; margin: 0; padding: 0; }
+      #invoice-result { display: block !important; border: none; box-shadow: none; padding: 0; }
+      .party-card { background: white; border: 1px solid #ccc; }
+      .doc-info { background: #f8f8f8; border: 1px solid #ccc; }
+      th { background: #eee !important; color: black; }
+      td, th { border: 1px solid #ddd; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="no-print">
+    <h1>Visualizzatore Fattura Elettronica</h1>
+    <p>Apri, leggi e stampa file XML e XML.P7M direttamente online</p>
+  </header>
+
+  <div class="container">
+    <!-- Privacy Banner -->
+    <div class="privacy-badge no-print">
+      🔒 <strong>Privacy Garantita al 100%:</strong> I tuoi file vengono elaborati esclusivamente sul tuo dispositivo. Nessun dato fiscale viene inviato o salvato su server esterni.
     </div>
 
-    <!-- Banner PWA (Aggiungi a Schermata Home) -->
-    <div id="pwaBanner" class="hidden bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs rounded-lg p-3 mb-4 flex items-center justify-between no-print">
-        <span>📲 Usa ApriXML come un'App sul telefono!</span>
-        <button onclick="aggiungiAllaHome()" class="bg-indigo-600 text-white px-3 py-1 rounded-md font-bold">Installa</button>
+    <!-- Dropzone per caricamento file -->
+    <div class="dropzone no-print" id="dropzone">
+      <span class="dropzone-icon">📂</span>
+      <h2>Trascina qui il tuo file XML o XML.P7M</h2>
+      <p>oppure clicca per selezionarlo dal tuo computer o smartphone</p>
+      <input type="file" id="file-input" accept=".xml,.p7m" style="display: none;">
     </div>
 
-    <!-- Box Caricamento File -->
-    <div class="border-2 border-dashed border-indigo-300 rounded-2xl p-8 text-center bg-white shadow-sm hover:border-indigo-500 transition no-print">
-        <input type="file" id="xmlInput" accept=".xml" class="hidden" onchange="gestisciFile(this.files)">
-        <label for="xmlInput" class="cursor-pointer block">
-            <div class="text-4xl mb-2">📂</div>
-            <span class="block text-sm font-semibold text-indigo-600 mb-1">Seleziona la Fattura .XML</span>
-            <span class="block text-xs text-slate-400">Tocca qui per scegliere il file dal telefono</span>
-        </label>
+    <!-- Barra delle Azioni -->
+    <div class="action-bar no-print" id="action-bar">
+      <button class="btn btn-secondary" onclick="resetApp()">📄 Carica un'altra fattura</button>
+      <button class="btn" onclick="window.print()">🖨️ Stampa o Salva PDF</button>
     </div>
 
     <!-- Risultato Fattura -->
-    <div id="risultato" class="hidden mt-6 space-y-4">
-        
-        <!-- Scheda Dati Generali -->
-        <div class="bg-white rounded-xl p-5 shadow-md border border-slate-100 print-card">
-            <div class="flex justify-between items-start border-b border-slate-100 pb-3 mb-3">
-                <div>
-                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Fattura N.</span>
-                    <h2 id="numeroFattura" class="text-lg font-bold text-slate-800">-</h2>
-                </div>
-                <div class="text-right">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Data</span>
-                    <p id="dataFattura" class="text-sm font-semibold text-slate-700">-</p>
-                </div>
-            </div>
+    <div id="invoice-result">
+      <!-- Intestazione Fornitore / Cliente -->
+      <div class="invoice-header-grid">
+        <div class="party-card">
+          <h3>Fornitore / Emittente</h3>
+          <div class="party-name" id="cedente-nome">-</div>
+          <div id="cedente-piva">P.IVA: -</div>
+          <div id="cedente-cf">C.F.: -</div>
+          <div id="cedente-indirizzo">-</div>
+        </div>
+        <div class="party-card">
+          <h3>Cliente / Destinatario</h3>
+          <div class="party-name" id="cessionario-nome">-</div>
+          <div id="cessionario-piva">P.IVA: -</div>
+          <div id="cessionario-cf">C.F.: -</div>
+          <div id="cessionario-indirizzo">-</div>
+        </div>
+      </div>
 
-            <div class="grid grid-cols-1 gap-3 text-sm">
-                <div>
-                    <p class="text-xs text-slate-400">Fornitore / Emittente:</p>
-                    <p id="fornitore" class="font-bold text-slate-800">-</p>
-                </div>
-                <div>
-                    <p class="text-xs text-slate-400">Cliente / Destinatario:</p>
-                    <p id="cliente" class="font-bold text-slate-800">-</p>
-                </div>
-            </div>
+      <!-- Dati Generali Documento -->
+      <div class="doc-info">
+        <div><span>Tipo Documento</span><strong id="doc-tipo">Fattura</strong></div>
+        <div><span>Numero Fattura</span><strong id="doc-numero">-</strong></div>
+        <div><span>Data Emissione</span><strong id="doc-data">-</strong></div>
+        <div><span>Importo Totale</span><strong id="doc-totale">€ 0,00</strong></div>
+      </div>
+
+      <!-- Tabella Dettaglio Linee / Prodotti -->
+      <h3 style="margin-bottom: 0.8rem; font-size: 1.1rem;">Dettaglio Prodotti e Servizi</h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 5%;">N°</th>
+              <th>Descrizione</th>
+              <th class="text-right" style="width: 10%;">Q.tà</th>
+              <th class="text-right" style="width: 15%;">Prezzo Unit.</th>
+              <th class="text-right" style="width: 10%;">IVA</th>
+              <th class="text-right" style="width: 15%;">Totale</th>
+            </tr>
+          </thead>
+          <tbody id="linee-body">
+            <!-- Inserito via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Dettaglio Pagamento & Totali -->
+      <div class="summary-grid">
+        <div class="totals-box">
+          <h4 style="margin-bottom: 0.5rem; color: var(--primary);">Modalità di Pagamento</h4>
+          <div id="pagamento-info" style="font-size: 0.9rem;">
+            <div><strong>Modalità:</strong> <span id="pag-modalita">-</span></div>
+            <div><strong>Scadenza:</strong> <span id="pag-scadenza">-</span></div>
+            <div><strong>IBAN:</strong> <span id="pag-iban" style="word-break: break-all;">-</span></div>
+          </div>
         </div>
 
-        <!-- Totale Importo -->
-        <div class="bg-indigo-50 rounded-xl p-4 text-center border border-indigo-100 print-card">
-            <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider block">Importo Totale da Pagare</span>
-            <span id="importoTotale" class="text-3xl font-extrabold text-indigo-900 mt-1 block">€ 0,00</span>
+        <div class="totals-box">
+          <h4 style="margin-bottom: 0.5rem; color: var(--primary);">Riepilogo Importi</h4>
+          <div class="totals-row">
+            <span>Totale Imponibile:</span>
+            <span id="tot-imponibile">€ 0,00</span>
+          </div>
+          <div class="totals-row">
+            <span>Totale Imposta IVA:</span>
+            <span id="tot-iva">€ 0,00</span>
+          </div>
+          <div class="totals-row" id="row-ritenuta" style="display:none; color: #dc2626;">
+            <span>Ritenuta d'Acconto:</span>
+            <span id="tot-ritenuta">- € 0,00</span>
+          </div>
+          <div class="totals-row final">
+            <span>Totale da Pagare:</span>
+            <span id="tot-documento">€ 0,00</span>
+          </div>
         </div>
-
-        <!-- Tabella Prodotti / Servizi -->
-        <div class="bg-white rounded-xl p-4 shadow-md border border-slate-100 print-card">
-            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Dettaglio Voci</h3>
-            <div id="listaRighe" class="space-y-2 divide-y divide-slate-100">
-                <!-- Inserito via JS -->
-            </div>
-        </div>
-
-        <!-- Tasto Stampa / Salva PDF -->
-        <button onclick="window.print()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl shadow-md text-sm hover:bg-slate-900 transition no-print flex items-center justify-center gap-2">
-            🖨️ Stampa o Salva in PDF
-        </button>
-
+      </div>
     </div>
 
-    ---
+    <!-- Spazio Banners AdSense (Futuro) -->
+    <div class="ad-placeholder no-print">
+      Spazio Pubblicitario (Google AdSense)
+    </div>
 
-    <!-- Sezione SEO FAQ (Testo per Google) -->
-    <section class="mt-12 space-y-6 text-slate-600 text-xs leading-relaxed no-print border-t border-slate-200 pt-8">
-        <h2 class="text-base font-bold text-slate-800">Domande Frequenti sugli Allegati XML</h2>
-        
-        <div>
-            <h3 class="font-bold text-slate-700 text-sm mb-1">Come posso aprire un file XML da iPhone o Android?</h3>
-            <p>Ti basta premere sul box in alto, selezionare il file .xml salvato tra i tuoi documenti o scaricato da una mail PEC, e il nostro sistema lo trasformerà in una fattura chiara e leggibile in meno di un secondo.</p>
-        </div>
+    <!-- Sezione SEO e Guida Utile -->
+    <section class="seo-content no-print">
+      <h2>Come funziona il Visualizzatore di Fatture Elettroniche Gratis</h2>
+      <p>Questo strumento ti permette di **aprire, leggere e stampare i file XML e XML.P7M** della fatturazione elettronica italiana senza dover installare programmi o registrarti. È compatibile con lo standard dell'Agenzia delle Entrate (FatturaPA) ed elabora sia le fatture tra privati (B2B) che della Pubblica Amministrazione.</p>
 
-        <div>
-            <h3 class="font-bold text-slate-700 text-sm mb-1">I miei dati fiscali sono al sicuro?</h3>
-            <p>Assolutamente sì. A differenza di altri siti, ApriXML elabora il file interamente all'interno della memoria del tuo smartphone o computer tramite codice JavaScript. Nessun file viene inviato o memorizzato su server esterni.</p>
-        </div>
+      <h2>Perché utilizzare questo strumento online?</h2>
+      <p>A differenza dei normali software contabili, questo servizio lavora in modalità <strong>client-side</strong>: il file XML viene decodificato direttamente nella memoria del tuo browser (Chrome, Safari, Edge, Firefox). Nessuna informazione fiscale o dato personale viene trasmesso a server esterni, garantendoti la massima sicurezza e conformità con il GDPR.</p>
 
-        <div>
-            <h3 class="font-bold text-slate-700 text-sm mb-1">Come posso salvare la fattura in formato PDF?</h3>
-            <p>Dopo aver caricato il file XML, premi sul pulsante "Stampa o Salva in PDF". Dal menu di stampa del tuo telefono potrai selezionare la voce "Salva come PDF" per conservare la fattura nel tuo dispositivo.</p>
-        </div>
+      <h2>Domande Frequenti (FAQ)</h2>
+      
+      <div class="faq-item">
+        <h3>Cos'è un file .XML.P7M e come si apre?</h3>
+        <p>Un file con estensione .P7M è un normale documento XML di fattura elettronica a cui è stata applicata la Firma Digitale CAdES. Il nostro lettore rimuove automaticamente l'involucro di protezione firmato per mostrarti i dati della fattura in modo chiaro e leggibile.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Come posso salvare la fattura in formato PDF?</h3>
+        <p>Ti basta caricare il file nel visualizzatore, fare clic sul pulsante <strong>"🖨️ Stampa o Salva PDF"</strong> e selezionare <em>"Salva come PDF"</em> nella finestra della stampante del tuo computer o smartphone.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Il servizio è gratuito e senza limiti?</h3>
+        <p>Sì, il servizio è completamente gratuito e ti permette di consultare tutte le fatture elettroniche che desideri senza alcuna limitazione.</p>
+      </div>
     </section>
+  </div>
 
-</main>
+  <script>
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('file-input');
 
-<!-- Footer -->
-<footer class="text-center p-4 text-xs text-slate-400 no-print">
-    &copy; ApriXML • Strumento gratuito e sicuro per Fatture Elettroniche
-</footer>
-
-<!-- Logica JavaScript -->
-<script>
-    // Gestione Lettura XML
-    function gestisciFile(files) {
-        if (files.length === 0) return;
-        const file = files[0];
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-            const xmlText = e.target.result;
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-
-            try {
-                const getTag = (tag) => {
-                    const el = xmlDoc.getElementsByTagName(tag)[0];
-                    return el ? el.textContent : '';
-                };
-
-                const numero = getTag('Numero');
-                const data = getTag('Data');
-                
-                const cedente = xmlDoc.getElementsByTagName('CedentePrestatore')[0];
-                const fornitoreNome = cedente ? (cedente.getElementsByTagName('Denominazione')[0]?.textContent || 
-                    ((cedente.getElementsByTagName('Nome')[0]?.textContent || '') + ' ' + (cedente.getElementsByTagName('Cognome')[0]?.textContent || ''))) : 'N/D';
-
-                const cessionario = xmlDoc.getElementsByTagName('CessionarioCommittente')[0];
-                const clienteNome = cessionario ? (cessionario.getElementsByTagName('Denominazione')[0]?.textContent || 
-                    ((cessionario.getElementsByTagName('Nome')[0]?.textContent || '') + ' ' + (cessionario.getElementsByTagName('Cognome')[0]?.textContent || ''))) : 'N/D';
-
-                const importo = getTag('ImportoTotaleDocumento') || getTag('PrezzoTotale') || '0.00';
-
-                document.getElementById('numeroFattura').innerText = numero || 'N/D';
-                document.getElementById('dataFattura').innerText = data || 'N/D';
-                document.getElementById('fornitore').innerText = fornitoreNome;
-                document.getElementById('cliente').innerText = clienteNome;
-                document.getElementById('importoTotale').innerText = '€ ' + parseFloat(importo).toFixed(2);
-
-                const righe = xmlDoc.getElementsByTagName('DettaglioLinee');
-                const containerRighe = document.getElementById('listaRighe');
-                containerRighe.innerHTML = '';
-
-                for (let i = 0; i < righe.length; i++) {
-                    const desc = righe[i].getElementsByTagName('Descrizione')[0]?.textContent || 'Voce generica';
-                    const prezzo = righe[i].getElementsByTagName('PrezzoTotale')[0]?.textContent || '0.00';
-
-                    const item = document.createElement('div');
-                    item.className = 'pt-2 flex justify-between text-xs';
-                    item.innerHTML = `
-                        <span class="text-slate-700 font-medium">${desc}</span>
-                        <span class="font-bold text-slate-900">€ ${parseFloat(prezzo).toFixed(2)}</span>
-                    `;
-                    containerRighe.appendChild(item);
-                }
-
-                document.getElementById('risultato').classList.remove('hidden');
-
-            } catch (err) {
-                alert('Errore nella lettura del file XML. Assicurati che sia un file di fattura elettronica valido.');
-            }
-        };
-
-        reader.readAsText(file);
-    }
-
-    // Logica per Promostra PWA su mobile
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        document.getElementById('pwaBanner').classList.remove('hidden');
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
     });
 
-    function aggiungiAllaHome() {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                deferredPrompt = null;
-                document.getElementById('pwaBanner').classList.add('hidden');
-            });
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) handleFile(e.target.files[0]);
+    });
+
+    function handleFile(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          let text = e.target.result;
+          let xmlContent = extractXmlFromText(text);
+          parseAndDisplayXml(xmlContent);
+        } catch (err) {
+          alert('Impossibile leggere il file selezionato. Assicurati che sia un file XML o P7M valido.');
+          console.error(err);
         }
+      };
+      reader.readAsText(file, 'UTF-8');
     }
-</script>
+
+    // Estrazione pulita da file P7M o XML grezzo
+    function extractXmlFromText(text) {
+      if (text.includes('<FatturaElettronica') || text.includes('<p:FatturaElettronica')) {
+        let start = text.indexOf('<?xml');
+        if (start === -1) start = text.indexOf('<p:FatturaElettronica');
+        if (start === -1) start = text.indexOf('<FatturaElettronica');
+
+        let end = text.indexOf('</p:FatturaElettronica>');
+        if (end !== -1) end += '</p:FatturaElettronica>'.length;
+        else {
+          end = text.indexOf('</FatturaElettronica>');
+          if (end !== -1) end += '</FatturaElettronica>'.length;
+        }
+
+        if (start !== -1 && end !== -1 && end > start) {
+          return text.substring(start, end);
+        }
+      }
+      return text;
+    }
+
+    // Helper per estrarre testo dai tag
+    function getXmlTagText(parent, tagName) {
+      if (!parent) return '';
+      const els = parent.getElementsByTagName(tagName);
+      return els.length > 0 ? els[0].textContent.trim() : '';
+    }
+
+    function formatEuro(numStr) {
+      if (!numStr) return '€ 0,00';
+      const num = parseFloat(numStr.replace(',', '.'));
+      return isNaN(num) ? '€ 0,00' : new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(num);
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const p = dateStr.split('-');
+      return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : dateStr;
+    }
+
+    function parseAndDisplayXml(xmlString) {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+
+      if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+        alert("Errore nella lettura della struttura XML.");
+        return;
+      }
+
+      // Cedente / Fornitore
+      const cedente = xmlDoc.getElementsByTagName("CedentePrestatore")[0];
+      if (cedente) {
+        const den = getXmlTagText(cedente, "Denominazione") || (getXmlTagText(cedente, "Nome") + ' ' + getXmlTagText(cedente, "Cognome"));
+        document.getElementById('cedente-nome').innerText = den || '-';
+        document.getElementById('cedente-piva').innerText = 'P.IVA: ' + (getXmlTagText(cedente, "IdCodice") || '-');
+        document.getElementById('cedente-cf').innerText = 'C.F.: ' + (getXmlTagText(cedente, "CodiceFiscale") || '-');
+        
+        const sede = cedente.getElementsByTagName("Sede")[0];
+        if (sede) {
+          document.getElementById('cedente-indirizzo').innerText = `${getXmlTagText(sede, "Indirizzo")}, ${getXmlTagText(sede, "CAP")} ${getXmlTagText(sede, "Comune")} (${getXmlTagText(sede, "Provincia")})`;
+        }
+      }
+
+      // Cessionario / Cliente
+      const cessionario = xmlDoc.getElementsByTagName("CessionarioCommittente")[0];
+      if (cessionario) {
+        const den = getXmlTagText(cessionario, "Denominazione") || (getXmlTagText(cessionario, "Nome") + ' ' + getXmlTagText(cessionario, "Cognome"));
+        document.getElementById('cessionario-nome').innerText = den || '-';
+        document.getElementById('cessionario-piva').innerText = 'P.IVA: ' + (getXmlTagText(cessionario, "IdCodice") || '-');
+        document.getElementById('cessionario-cf').innerText = 'C.F.: ' + (getXmlTagText(cessionario, "CodiceFiscale") || '-');
+        
+        const sede = cessionario.getElementsByTagName("Sede")[0];
+        if (sede) {
+          document.getElementById('cessionario-indirizzo').innerText = `${getXmlTagText(sede, "Indirizzo")}, ${getXmlTagText(sede, "CAP")} ${getXmlTagText(sede, "Comune")} (${getXmlTagText(sede, "Provincia")})`;
+        }
+      }
+
+      // Dati Generali Documento
+      const datiGenerali = xmlDoc.getElementsByTagName("DatiGeneraliDocumento")[0];
+      if (datiGenerali) {
+        document.getElementById('doc-tipo').innerText = getXmlTagText(datiGenerali, "TipoDocumento") || 'Fattura';
+        document.getElementById('doc-numero').innerText = getXmlTagText(datiGenerali, "Numero") || '-';
+        document.getElementById('doc-data').innerText = formatDate(getXmlTagText(datiGenerali, "Data"));
+        document.getElementById('doc-totale').innerText = formatEuro(getXmlTagText(datiGenerali, "ImportoTotaleDocumento"));
+        document.getElementById('tot-documento').innerText = formatEuro(getXmlTagText(datiGenerali, "ImportoTotaleDocumento"));
+        
+        const rit = getXmlTagText(datiGenerali, "ImportoRitenuta");
+        if (rit && parseFloat(rit) > 0) {
+          document.getElementById('row-ritenuta').style.display = 'flex';
+          document.getElementById('tot-ritenuta').innerText = '- ' + formatEuro(rit);
+        } else {
+          document.getElementById('row-ritenuta').style.display = 'none';
+        }
+      }
+
+      // Tabella Linee
+      const lineeBody = document.getElementById('linee-body');
+      lineeBody.innerHTML = '';
+      const linee = xmlDoc.getElementsByTagName("DettaglioLinee");
+      let totImponibile = 0;
+      let totIva = 0;
+
+      for (let i = 0; i < linee.length; i++) {
+        const num = getXmlTagText(linee[i], "NumeroLinea") || (i + 1);
+        const desc = getXmlTagText(linee[i], "Descrizione") || '-';
+        const qta = getXmlTagText(linee[i], "Quantita") || '1';
+        const prezzo = getXmlTagText(linee[i], "PrezzoUnitario") || '0';
+        const iva = getXmlTagText(linee[i], "AliquotaIVA") || '0';
+        const tot = getXmlTagText(linee[i], "PrezzoTotale") || '0';
+
+        totImponibile += parseFloat(tot.replace(',', '.')) || 0;
+        totIva += (parseFloat(tot.replace(',', '.')) || 0) * ((parseFloat(iva.replace(',', '.')) || 0) / 100);
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${num}</td>
+          <td>${desc}</td>
+          <td class="text-right">${qta}</td>
+          <td class="text-right">${formatEuro(prezzo)}</td>
+          <td class="text-right">${iva}%</td>
+          <td class="text-right">${formatEuro(tot)}</td>
+        `;
+        lineeBody.appendChild(tr);
+      }
+
+      document.getElementById('tot-imponibile').innerText = formatEuro(totImponibile.toString());
+      document.getElementById('tot-iva').innerText = formatEuro(totIva.toString());
+
+      // Dati Pagamento
+      const pag = xmlDoc.getElementsByTagName("DettaglioPagamento")[0];
+      if (pag) {
+        document.getElementById('pag-modalita').innerText = getXmlTagText(pag, "ModalitaPagamento") || 'Non specificata';
+        document.getElementById('pag-scadenza').innerText = formatDate(getXmlTagText(pag, "DataScadenzaPagamento"));
+        document.getElementById('pag-iban').innerText = getXmlTagText(pag, "IBAN") || 'Non presente';
+      }
+
+      // Mostra interfaccia
+      dropzone.style.display = 'none';
+      document.getElementById('action-bar').style.display = 'flex';
+      document.getElementById('invoice-result').style.display = 'block';
+    }
+
+    function resetApp() {
+      document.getElementById('invoice-result').style.display = 'none';
+      document.getElementById('action-bar').style.display = 'none';
+      dropzone.style.display = 'block';
+      fileInput.value = '';
+    }
+  </script>
+</body>
+</html>
