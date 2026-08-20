@@ -330,8 +330,19 @@
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlString, "text/xml");
 
+      // 1. Controlla se il file XML è corrotto o malformato
       if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
-        alert("Errore nella lettura della struttura XML.");
+        alert("Errore: Il file caricato non è un XML valido o è danneggiato.");
+        return;
+      }
+
+      // 2. CONTROLLO DI VALIDITÀ: Verifica se è davvero una Fattura Elettronica
+      const isFattura = xmlDoc.getElementsByTagName("FatturaElettronica").length > 0 || 
+                        xmlDoc.getElementsByTagName("p:FatturaElettronica").length > 0 ||
+                        xmlDoc.getElementsByTagName("FatturaElettronicaHeader").length > 0;
+
+      if (!isFattura) {
+        alert("Attenzione: Il file caricato è un file XML, ma NON è una Fattura Elettronica (FatturaPA).");
         return;
       }
 
