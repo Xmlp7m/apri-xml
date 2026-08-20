@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visualizzatore Fattura Elettronica Gratis | Apri XML e P7M Online</title>
-  <meta name="description" content="Visualizza, leggi e stampa le tue fatture elettroniche XML e XML.P7M online gratis. Servizio sicuro al 100% nel tuo browser, nessun dato inviato a server esterni.">
-  <meta name="keywords" content="visualizzatore fattura elettronica, apri xml, apri p7m online, leggi fattura xml gratis, converti xml in pdf, fattura pa, lettura p7m">
+  <title>Visualizzatore XML e P7M Gratis | Lettore Fatture e Documenti</title>
+  <meta name="description" content="Visualizza, leggi e stampa le tue fatture elettroniche XML/P7M e consulta qualsiasi file XML generico online gratis e in totale privacy.">
+  <meta name="keywords" content="visualizzatore fattura elettronica, apri xml, apri p7m online, leggi fattura xml gratis, lettore xml generico">
   <meta name="robots" content="index, follow">
 
   <!-- Dati Strutturati Schema.org per Google -->
@@ -13,10 +13,10 @@
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "Visualizzatore Fattura Elettronica Gratis",
+    "name": "Visualizzatore XML e Fatture Elettroniche Gratis",
     "url": "https://xmlp7m.github.io/apri-xml/",
-    "description": "Strumento gratuito online per leggere, visualizzare e stampare fatture elettroniche XML e P7M in totale privacy.",
-    "applicationCategory": "FinanceApplication",
+    "description": "Strumento gratuito online per leggere, visualizzare e stampare qualsiasi file XML o P7M in totale privacy.",
+    "applicationCategory": "UtilitiesApplication",
     "operatingSystem": "All",
     "offers": {
       "@type": "Offer",
@@ -83,13 +83,17 @@
     th { background: #f8fafc; text-align: left; padding: 0.75rem; border-bottom: 2px solid var(--border); font-weight: 600; color: var(--text-muted); }
     td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
     .text-right { text-align: right; }
-    .text-center { text-align: center; }
 
     /* Summary Box */
     .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
     .totals-box { background: #f8fafc; border: 1px solid var(--border); padding: 1.2rem; border-radius: 8px; }
     .totals-row { display: flex; justify-content: space-between; padding: 0.4rem 0; font-size: 0.9rem; }
     .totals-row.final { font-size: 1.2rem; font-weight: bold; border-top: 2px solid var(--border); padding-top: 0.8rem; margin-top: 0.4rem; color: var(--primary); }
+
+    /* Raw XML Result Container */
+    #raw-result { display: none; background: #0f172a; color: #f8fafc; padding: 1.5rem; border-radius: 12px; font-family: monospace; font-size: 0.875rem; overflow-x: auto; max-height: 600px; }
+    #raw-result header-tag { color: #38bdf8; font-weight: bold; }
+    .raw-notice { background: #fef3c7; border: 1px solid #fde68a; color: #92400e; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.875rem; }
 
     /* SEO Section */
     .seo-content { margin-top: 4rem; border-top: 1px solid var(--border); padding-top: 2.5rem; color: #334155; }
@@ -98,17 +102,11 @@
     .faq-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.2rem; margin-bottom: 1rem; }
     .faq-item h3 { font-size: 1rem; color: var(--primary); margin-bottom: 0.4rem; }
 
-    /* AdSense Placeholder */
-    .ad-placeholder { background: #f1f5f9; border: 1px dashed #cbd5e1; padding: 1rem; text-align: center; font-size: 0.8rem; color: var(--text-muted); margin: 2rem 0; min-height: 90px; border-radius: 8px; }
-
-    /* Print CSS */
     @media print {
       body { background: white; color: black; font-size: 11pt; padding: 0; }
-      header, .privacy-badge, .dropzone, .action-bar, .seo-content, .ad-placeholder { display: none !important; }
+      header, .privacy-badge, .dropzone, .action-bar, .seo-content, .raw-notice { display: none !important; }
       .container { max-width: 100%; margin: 0; padding: 0; }
       #invoice-result { display: block !important; border: none; box-shadow: none; padding: 0; }
-      .party-card { background: white; border: 1px solid #ccc; }
-      .doc-info { background: #f8f8f8; border: 1px solid #ccc; }
       th { background: #eee !important; color: black; }
       td, th { border: 1px solid #ddd; }
     }
@@ -117,33 +115,29 @@
 <body>
 
   <header class="no-print">
-    <h1>Visualizzatore Fattura Elettronica</h1>
-    <p>Apri, leggi e stampa file XML e XML.P7M direttamente online</p>
+    <h1>Visualizzatore XML & Fattura Elettronica</h1>
+    <p>Apri, leggi e consulta file XML e XML.P7M direttamente online</p>
   </header>
 
   <div class="container">
-    <!-- Privacy Banner -->
     <div class="privacy-badge no-print">
-      🔒 <strong>Privacy Garantita al 100%:</strong> I tuoi file vengono elaborati esclusivamente sul tuo dispositivo. Nessun dato fiscale viene inviato o salvato su server esterni.
+      🔒 <strong>Privacy Garantita al 100%:</strong> I tuoi file vengono elaborati esclusivamente sul tuo dispositivo. Nessun dato viene inviato a server esterni.
     </div>
 
-    <!-- Dropzone per caricamento file -->
     <div class="dropzone no-print" id="dropzone">
       <span class="dropzone-icon">📂</span>
       <h2>Trascina qui il tuo file XML o XML.P7M</h2>
-      <p>oppure clicca per selezionarlo dal tuo computer o smartphone</p>
+      <p>oppure clicca per selezionarlo dal tuo dispositivo</p>
       <input type="file" id="file-input" accept=".xml,.p7m" style="display: none;">
     </div>
 
-    <!-- Barra delle Azioni -->
     <div class="action-bar no-print" id="action-bar">
-      <button class="btn btn-secondary" onclick="resetApp()">📄 Carica un'altra fattura</button>
-      <button class="btn" onclick="window.print()">🖨️ Stampa o Salva PDF</button>
+      <button class="btn btn-secondary" onclick="resetApp()">📄 Carica un altro file</button>
+      <button class="btn" id="btn-print" onclick="window.print()">🖨️ Stampa / Salva PDF</button>
     </div>
 
-    <!-- Risultato Fattura -->
+    <!-- Vista Fattura Elettronica -->
     <div id="invoice-result">
-      <!-- Intestazione Fornitore / Cliente -->
       <div class="invoice-header-grid">
         <div class="party-card">
           <h3>Fornitore / Emittente</h3>
@@ -161,7 +155,6 @@
         </div>
       </div>
 
-      <!-- Dati Generali Documento -->
       <div class="doc-info">
         <div><span>Tipo Documento</span><strong id="doc-tipo">Fattura</strong></div>
         <div><span>Numero Fattura</span><strong id="doc-numero">-</strong></div>
@@ -169,7 +162,6 @@
         <div><span>Importo Totale</span><strong id="doc-totale">€ 0,00</strong></div>
       </div>
 
-      <!-- Tabella Dettaglio Linee / Prodotti -->
       <h3 style="margin-bottom: 0.8rem; font-size: 1.1rem;">Dettaglio Prodotti e Servizi</h3>
       <div class="table-container">
         <table>
@@ -183,13 +175,10 @@
               <th class="text-right" style="width: 15%;">Totale</th>
             </tr>
           </thead>
-          <tbody id="linee-body">
-            <!-- Inserito via JS -->
-          </tbody>
+          <tbody id="linee-body"></tbody>
         </table>
       </div>
 
-      <!-- Dettaglio Pagamento & Totali -->
       <div class="summary-grid">
         <div class="totals-box">
           <h4 style="margin-bottom: 0.5rem; color: var(--primary);">Modalità di Pagamento</h4>
@@ -222,34 +211,27 @@
       </div>
     </div>
 
-    <!-- Spazio Banners AdSense (Futuro) -->
-    <div class="ad-placeholder no-print">
-      Spazio Pubblicitario (Google AdSense)
+    <!-- Vista XML Generico / Non Fattura -->
+    <div id="raw-container" style="display: none;">
+      <div class="raw-notice">
+        ℹ️ <strong>File XML generico rilevato:</strong> Il file non è una fattura elettronica. Di seguito ne viene mostrato il contenuto strutturato.
+      </div>
+      <pre id="raw-result"><code id="raw-code"></code></pre>
     </div>
 
-    <!-- Sezione SEO e Guida Utile -->
+    <!-- Sezione SEO -->
     <section class="seo-content no-print">
-      <h2>Come funziona il Visualizzatore di Fatture Elettroniche Gratis</h2>
-      <p>Questo strumento ti permette di **aprire, leggere e stampare i file XML e XML.P7M** della fatturazione elettronica italiana senza dover installare programmi o registrarti. È compatibile con lo standard dell'Agenzia delle Entrate (FatturaPA) ed elabora sia le fatture tra privati (B2B) che della Pubblica Amministrazione.</p>
-
-      <h2>Perché utilizzare questo strumento online?</h2>
-      <p>A differenza dei normali software contabili, questo servizio lavora in modalità <strong>client-side</strong>: il file XML viene decodificato direttamente nella memoria del tuo browser (Chrome, Safari, Edge, Firefox). Nessuna informazione fiscale o dato personale viene trasmesso a server esterni, garantendoti la massima sicurezza e conformità con il GDPR.</p>
+      <h2>Come funziona il Visualizzatore di File XML e P7M</h2>
+      <p>Questo strumento ti permette di **aprire, consultare e stampare file XML e XML.P7M** direttamente online. Riconosce automaticamente lo standard della **Fattura Elettronica (FatturaPA)** mostrando una grafica contabile semplificata, oppure mostra in modo chiaro il testo formattato in caso di file XML generici (es. notifiche PEC, feed, file di configurazione).</p>
 
       <h2>Domande Frequenti (FAQ)</h2>
-      
       <div class="faq-item">
-        <h3>Cos'è un file .XML.P7M e come si apre?</h3>
-        <p>Un file con estensione .P7M è un normale documento XML di fattura elettronica a cui è stata applicata la Firma Digitale CAdES. Il nostro lettore rimuove automaticamente l'involucro di protezione firmato per mostrarti i dati della fattura in modo chiaro e leggibile.</p>
+        <h3>Come si apre un file .XML.P7M?</h3>
+        <p>Un file con estensione .P7M è un documento XML a cui è stata applicata la Firma Digitale. Il nostro sistema estrae ed elabora il contenuto XML senza richiedere software aggiuntivi.</p>
       </div>
-
       <div class="faq-item">
-        <h3>Come posso salvare la fattura in formato PDF?</h3>
-        <p>Ti basta caricare il file nel visualizzatore, fare clic sul pulsante <strong>"🖨️ Stampa o Salva PDF"</strong> e selezionare <em>"Salva come PDF"</em> nella finestra della stampante del tuo computer o smartphone.</p>
-      </div>
-
-      <div class="faq-item">
-        <h3>Il servizio è gratuito e senza limiti?</h3>
-        <p>Sì, il servizio è completamente gratuito e ti permette di consultare tutte le fatture elettroniche che desideri senza alcuna limitazione.</p>
+        <h3>I miei file vengono salvati online?</h3>
+        <p>No, l'elaborazione avviene al 100% all'interno del tuo browser. Nessun dato lascia il tuo computer o smartphone.</p>
       </div>
     </section>
   </div>
@@ -286,20 +268,16 @@
       reader.readAsText(file, 'UTF-8');
     }
 
-    // Estrazione pulita da file P7M o XML grezzo
     function extractXmlFromText(text) {
-      if (text.includes('FatturaElettronica')) {
-        let start = text.indexOf('<?xml');
-        if (start === -1) start = text.indexOf('<');
-        let end = text.lastIndexOf('>');
-        if (start !== -1 && end !== -1 && end > start) {
-          return text.substring(start, end + 1);
-        }
+      let start = text.indexOf('<?xml');
+      if (start === -1) start = text.indexOf('<');
+      let end = text.lastIndexOf('>');
+      if (start !== -1 && end !== -1 && end > start) {
+        return text.substring(start, end + 1);
       }
       return text;
     }
 
-    // Helper universale per gestire i prefissi XML (p:, ns2:, ecc.)
     function getXmlNodes(parent, tagName) {
       if (!parent) return [];
       let nodes = parent.getElementsByTagNameNS("*", tagName);
@@ -336,18 +314,29 @@
         return;
       }
 
-      // Controllo Fattura (tollerante a tutti i prefissi di namespace)
-      const isFattura = xmlString.includes("FatturaElettronica") || 
-                        xmlString.includes("FatturaElettronicaHeader") ||
-                        xmlString.includes("CedentePrestatore") ||
-                        getXmlNodes(xmlDoc, "FatturaElettronicaHeader").length > 0;
+      const xmlLower = xmlString.toLowerCase();
+      const isFattura = xmlLower.includes("fatturaelettronica") || 
+                        xmlLower.includes("cedenteprestatore") || 
+                        xmlLower.includes("cessionariocommittente");
 
-      if (!isFattura) {
-        alert("Attenzione: Il file caricato è un file XML, ma NON è una Fattura Elettronica (FatturaPA).");
-        return;
+      dropzone.style.display = 'none';
+      document.getElementById('action-bar').style.display = 'flex';
+
+      if (isFattura) {
+        document.getElementById('invoice-result').style.display = 'block';
+        document.getElementById('raw-container').style.display = 'none';
+        document.getElementById('btn-print').style.display = 'inline-flex';
+        renderInvoice(xmlDoc);
+      } else {
+        document.getElementById('invoice-result').style.display = 'none';
+        document.getElementById('raw-container').style.display = 'block';
+        document.getElementById('btn-print').style.display = 'none';
+        document.getElementById('raw-code').textContent = formatXmlString(xmlString);
       }
+    }
 
-      // Cedente / Fornitore
+    function renderInvoice(xmlDoc) {
+      // Cedente
       const cedente = getXmlNodes(xmlDoc, "CedentePrestatore")[0];
       if (cedente) {
         const den = getXmlTagText(cedente, "Denominazione") || (getXmlTagText(cedente, "Nome") + ' ' + getXmlTagText(cedente, "Cognome"));
@@ -361,7 +350,7 @@
         }
       }
 
-      // Cessionario / Cliente
+      // Cessionario
       const cessionario = getXmlNodes(xmlDoc, "CessionarioCommittente")[0];
       if (cessionario) {
         const den = getXmlTagText(cessionario, "Denominazione") || (getXmlTagText(cessionario, "Nome") + ' ' + getXmlTagText(cessionario, "Cognome"));
@@ -375,7 +364,7 @@
         }
       }
 
-      // Dati Generali Documento
+      // Dati Documento
       const datiGenerali = getXmlNodes(xmlDoc, "DatiGeneraliDocumento")[0];
       if (datiGenerali) {
         document.getElementById('doc-tipo').innerText = getXmlTagText(datiGenerali, "TipoDocumento") || 'Fattura';
@@ -426,22 +415,42 @@
       document.getElementById('tot-imponibile').innerText = formatEuro(totImponibile.toString());
       document.getElementById('tot-iva').innerText = formatEuro(totIva.toString());
 
-      // Dati Pagamento
+      // Pagamento
       const pag = getXmlNodes(xmlDoc, "DettaglioPagamento")[0];
       if (pag) {
         document.getElementById('pag-modalita').innerText = getXmlTagText(pag, "ModalitaPagamento") || 'Non specificata';
         document.getElementById('pag-scadenza').innerText = formatDate(getXmlTagText(pag, "DataScadenzaPagamento"));
         document.getElementById('pag-iban').innerText = getXmlTagText(pag, "IBAN") || 'Non presente';
       }
+    }
 
-      // Mostra interfaccia
-      dropzone.style.display = 'none';
-      document.getElementById('action-bar').style.display = 'flex';
-      document.getElementById('invoice-result').style.display = 'block';
+    function formatXmlString(xml) {
+      let reg = /(>)(<)(\/*)/g;
+      xml = xml.replace(reg, '$1\r\n$2$3');
+      let pad = 0;
+      let formatted = '';
+      xml.split('\r\n').forEach(node => {
+        let indent = 0;
+        if (node.match(/.+<\/\w[^>]*>$/)) {
+          indent = 0;
+        } else if (node.match(/^<\/\w/)) {
+          if (pad !== 0) pad -= 1;
+        } else if (node.match(/^<\w[^>]*[^\/]>$/)) {
+          indent = 1;
+        } else {
+          indent = 0;
+        }
+        let padding = '';
+        for (let i = 0; i < pad; i++) padding += '  ';
+        formatted += padding + node + '\n';
+        pad += indent;
+      });
+      return formatted.trim();
     }
 
     function resetApp() {
       document.getElementById('invoice-result').style.display = 'none';
+      document.getElementById('raw-container').style.display = 'none';
       document.getElementById('action-bar').style.display = 'none';
       dropzone.style.display = 'block';
       fileInput.value = '';
